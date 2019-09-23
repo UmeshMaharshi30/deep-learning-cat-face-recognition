@@ -13,12 +13,11 @@ raw_images_dir = "A:\\Machine Learning\\cat dataset\\cat-dataset\\processed\\ima
 annotation_data_file = "A:\\Machine Learning\\cat dataset\\cat-dataset\\processed\\annotations_data.ssv";
 model_root = "A:\Machine Learning\cat dataset\cat-dataset\processed\model"
 
-machine_model = Cat_Face(raw_images_dir, annotation_data_file, model_root_dir=model_root,convert_image=-1,limit=1000);
+machine_model = Cat_Face(raw_images_dir, annotation_data_file, model_root_dir=model_root,convert_image=-1,
+                         limit=10000,scale=(128,128));
 
-# machine_model.generate_rescaled_annotation_file()
-# machine_model.rescale_images()
-# machine_model.draw_annotations_on_all_images(converted=False)
-
-# train_and_test_data = machine_model.get_train_and_test()
-machine_model.set_up_model()
-# machine_model.read_predictions_and_annotation(original_size=False)
+#machine_model.generate_rescaled_annotation_file()
+#machine_model.rescale_images()
+#train_and_test_data = machine_model.get_train_and_test()
+#machine_model.set_up_model()
+machine_model.read_predictions_and_annotation(original_size=False)

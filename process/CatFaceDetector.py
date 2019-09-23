@@ -160,8 +160,8 @@ class Deep_Learning_Model():
             line = line.strip()
             line_split = line.split(" ")
             image_name = self.file_name_from_path(line_split[len(line_split) - 1], self.path_separator) + ".png"
-            image_full_path = self.rescaled_converted_images_dir + image_name
-            bitmap = np.array(list(Image.open(image_full_path).getdata())).reshape((64, 64))
+            image_full_path = self.rescaled_images_dir + image_name
+            bitmap = np.array(list(Image.open(image_full_path).getdata())).reshape((self.scale[0], self.scale[0], 3))
             # bitmap = np.array(list(Image.open(image_full_path).getdata()))
             classification = [];
             for i in range(1, 19):
@@ -197,8 +197,9 @@ class Deep_Learning_Model():
         if saved_data:
             self.load_from_files()
             
-        self.trainX = np.array(self.trainX).reshape(self.trainX.shape[0],1,64,64)
-        self.testX = np.array(self.testX).reshape(self.testX.shape[0],1,64,64)
+        temp_scale = self.scale[0]
+        self.trainX = np.array(self.trainX).reshape(self.trainX.shape[0],3,temp_scale,temp_scale)
+        self.testX = np.array(self.testX).reshape(self.testX.shape[0],3,temp_scale,temp_scale)
         self.trainY = self.trainY
         self.testY = self.testY
         print(self.trainX.shape)
@@ -206,17 +207,15 @@ class Deep_Learning_Model():
         print(self.testX.shape)
         print(self.testY.shape)
         model = Sequential()
-        model.add(Convolution2D(64,4,strides=2,data_format="channels_first",padding='valid',input_shape=(1, 64, 64)))
-        model.add(AveragePooling2D(pool_size = (2, 2)))
+        model.add(Convolution2D(int(temp_scale/2),4,strides=4,data_format="channels_first",padding='valid',input_shape=(3, temp_scale, temp_scale)))
+        model.add(MaxPooling2D(pool_size = (4, 4)))
         model.add(Dropout(0.25))
-        model.add(Convolution2D(32, 4,strides=2, activation='relu'))
-        model.add(AveragePooling2D(pool_size = (2, 2)))
-        model.add(Dropout(0.5))
+        model.add(Convolution2D(16, 4,strides=4, activation='relu'))
         model.add(Flatten())
         model.add(Dense(self.trainY.shape[1], activation='relu'))
         model.compile(loss='mean_absolute_error', optimizer='adam', metrics=['mae'])
         self.convo_model = model
-        model.fit(self.trainX, self.trainY, validation_data=(self.testX, self.testY), epochs=2, batch_size=100, verbose=1)
+        model.fit(self.trainX, self.trainY, validation_data=(self.testX, self.testY), epochs=50, batch_size=50, verbose=1)
         filename = self.model_root_dir + self.path_separator + "convo_model.sav" 
         pickle.dump(model, open(filename, 'wb'))
         output_values = np.asarray(model.predict(self.testX))
@@ -238,7 +237,7 @@ class Deep_Learning_Model():
     def get_lines_from_prediction_line(self, line):
         index = 0
         lines = []
-        for i in range(0,1):
+        for i in range(0,3):
             index = i * 6
             part = [(line[index], line[index + 1]), (line[index + 2], line[index + 3]), (line[index + 4], line[index + 5]),(line[index], line[index + 1])]
             lines.append(part)
